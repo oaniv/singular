@@ -175,7 +175,10 @@
   ];
   const CUE_START = { x: 180, y: 470 };
   const SING_POS = { x: 250, y: 205 };
-  const REVEAL_POS = { x: 180, y: 271 }, REVEAL_R = 90;
+  let REVEAL_POS = { x: 180, y: 271 }, REVEAL_R = 90;
+  // vídeos: final mais alto, fora das áreas cobertas pelos botões do Instagram
+  const FMT = params.get('formato') || 'reels';
+  if (params.has('rec')) { REVEAL_POS = { x: 180, y: FMT === 'stories' ? 230 : 214 }; REVEAL_R = FMT === 'stories' ? 74 : 76; }
   const DECEL = 230, DRAG = .5, E_CUSH = .78, E_BALL = .96;
 
   let balls = [], cueB, singB, cuePotted = false;
@@ -770,21 +773,31 @@
     if (state === 'reveal' && revealT > 1.55) {
       const a = k => clamp((revealT - 1.55 - k) / .45);
       const serif = (w, s, it = '') => PIX ? `${Math.round(s * .55)}px 'Press Start 2P'` : `${it}${w} ${s}px 'Cormorant Garamond'`;
-      recText(c, PIX ? 'SINGULAR' : 'singular', PIX ? 128 : 124, PIX ? "28px 'Press Start 2P'" : "66px 'Great Vibes'", '#f0d08e', a(0));
-      recText(c, PIX ? 'NA CAÇAPA!' : 'na caçapa! 🎱', 392, serif(500, 18, 'italic '), '#f0d9aa', a(0));
-      recText(c, PIX ? 'BRUNA K. FT. FERRE' : 'B R U N A   K .   F T .   F É R R E', 418, serif(500, 16), '#e9d3a6', a(.1));
-      recText(c, '20/11', 466, PIX ? "34px 'Press Start 2P'" : "500 66px 'Cormorant Garamond'", '#f4dfae', a(.2));
-      recText(c, PIX ? 'EM TODAS AS PLATAFORMAS' : 'em todas as plataformas', 508, serif(500, 17), '#f3e6cc', a(.3));
-      // botão "pré-save no link da bio"
+      const L = FMT === 'stories'
+        ? { title: 108, kick: 326, artist: 348, date: 388, sub: 422, btn: 458, btnTxt: PIX ? 'TOQUE NO LINK' : '🎱  TOQUE NO LINK PARA O PRÉ-SAVE', arrow: true }
+        : { title: 92, kick: 318, artist: 340, date: 380, sub: 414, btn: 452, btnTxt: PIX ? 'PRE-SAVE NA BIO' : '🎱  PRÉ-SAVE NO LINK DA BIO', arrow: false };
+      recText(c, PIX ? 'SINGULAR' : 'singular', L.title, PIX ? "28px 'Press Start 2P'" : "66px 'Great Vibes'", '#f0d08e', a(0));
+      recText(c, PIX ? 'NA CAÇAPA!' : 'na caçapa! 🎱', L.kick, serif(500, 18, 'italic '), '#f0d9aa', a(0));
+      recText(c, PIX ? 'BRUNA K. FT. FERRE' : 'B R U N A   K .   F T .   F É R R E', L.artist, serif(500, 16), '#e9d3a6', a(.1));
+      recText(c, '20/11', L.date, PIX ? "34px 'Press Start 2P'" : "500 66px 'Cormorant Garamond'", '#f4dfae', a(.2));
+      recText(c, PIX ? 'EM TODAS AS PLATAFORMAS' : 'em todas as plataformas', L.sub, serif(500, 17), '#f3e6cc', a(.3));
+      // botão de chamada (Reels: "link da bio" | Stories: espaço para a figurinha de link logo abaixo)
       const al = a(.5), pulse = 1 + .04 * Math.sin(revealT * 5);
-      c.save(); c.globalAlpha = al; c.translate(180, 562); c.scale(pulse, pulse);
+      c.save(); c.globalAlpha = al; c.translate(180, L.btn); c.scale(pulse, pulse);
       if (PIX) { c.fillStyle = '#5a0d12'; c.fillRect(-128, -18, 260, 40); c.fillStyle = '#e2bd72'; c.fillRect(-132, -22, 260, 40); }
       else {
         const g = c.createLinearGradient(0, -24, 0, 24); g.addColorStop(0, '#f6dc9c'); g.addColorStop(.55, '#d1a34f'); g.addColorStop(1, '#a87830');
         c.shadowColor = 'rgba(226,189,114,.6)'; c.shadowBlur = 24; c.fillStyle = g; c.beginPath(); c.roundRect(-140, -24, 280, 48, 24); c.fill();
       }
       c.restore();
-      recText(c, PIX ? 'PRE-SAVE NA BIO' : '🎱  PRÉ-SAVE NO LINK DA BIO', PIX ? 560 : 563, PIX ? "11px 'Press Start 2P'" : "700 19px 'Cormorant Garamond'", '#2a0609', al, false);
+      recText(c, L.btnTxt, PIX ? L.btn - 2 : L.btn + 1, PIX ? "11px 'Press Start 2P'" : "700 17px 'Cormorant Garamond'", '#2a0609', al, false);
+      if (L.arrow) {
+        const bob = Math.sin(revealT * 6) * 4, ay = L.btn + 40 + bob;
+        c.save(); c.globalAlpha = al; c.fillStyle = '#f0d08e';
+        if (PIX) { for (let i = 0; i < 5; i++) c.fillRect(180 - (5 - i) * 3, ay + i * 3, (5 - i) * 6, 3); }
+        else { c.beginPath(); c.moveTo(166, ay); c.lineTo(194, ay); c.lineTo(180, ay + 16); c.closePath(); c.fill(); }
+        c.restore();
+      }
     }
     if (recorder && recorder.state === 'recording' && state === 'reveal' && revealT > 6.2) recorder.stop();
   }
@@ -813,7 +826,7 @@
     window.__renderAll = async () => {
       await assetsReady();
       misses = 1; ownShot = false; resetLayout(); state = 'auto'; autoT = 0;
-      const name = PIX ? 'pixel' : 'elegante'; let f = 0;
+      const name = FMT; let f = 0;
       for (; f < 600; f++) {
         update(1 / 30); render();
         const blob = await new Promise(r => canvas.toBlob(r, 'image/jpeg', .93));
