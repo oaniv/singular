@@ -150,14 +150,14 @@
 
   // ====== Elementos ======
   const stage = $('#stage'), canvas = $('#c'), ctx = canvas.getContext('2d');
-  const buf = document.createElement('canvas'); buf.width = 180; buf.height = 320;
+  const buf = document.createElement('canvas'); buf.width = 360; buf.height = 640;
   const bctx = buf.getContext('2d');
   const startEl = $('#start'), revealEl = $('#reveal'), toastEl = $('#toast'), muteEl = $('#mute');
   $('#cta').href = PRESAVE_URL;
 
   const imgBall = new Image(); imgBall.src = 'assets/bola-hd.png';
   const imgVel = new Image(); imgVel.src = 'assets/veludo.jpg';
-  const music = new Audio('assets/refrao.mp3'); music.loop = true; music.volume = .85; music.preload = 'auto';
+  const music = new Audio('assets/refrao.mp3'); music.loop = true; music.volume = .8; music.preload = 'auto';
 
   const params = new URLSearchParams(location.search);
   const REC = params.has('rec');
@@ -357,7 +357,7 @@
   function newGame() {
     resetLayout(); misses = 0; ownShot = true; particles = []; revealShown = false;
     revealEl.classList.add('hidden'); startEl.classList.add('hidden');
-    state = 'aim'; aimAtSingular(); music.volume = .85;
+    state = 'aim'; aimAtSingular(); music.volume = .8;
   }
 
   // ====== Entrada (puxar e soltar) ======
